@@ -2,7 +2,7 @@ from cvrp import CVRP
 
 class SimulatedAnnealing:
     
-    temp_atual: int
+    actual_temp: int
     
     def gen_initial_sol(instance: CVRP):
-        
+        pass

@@ -10,6 +10,11 @@ class CVRP:
     instance_dict: dict
     number_of_trucks: int
     distance_matrix: np.ndarray
+    vertex_demand: np.ndarray
+    truck_capacity: int
+    V: np.ndarray
+    depot_i: int
+    optimal_value: int
     
     def __init__(self, intance_path: str = ""):
         """
@@ -20,7 +25,7 @@ class CVRP:
         """
         instance_dict = vrplib.read_instance(intance_path, compute_edge_weights=False)
         self.instance_dict = instance_dict
-        
+        print(instance_dict)
         # match com numero de caminhões (numero de rotas)
         match = re.search(r'No\s+of\s+trucks:\s*(\d+)', instance_dict["comment"])
         if match:
@@ -30,17 +35,20 @@ class CVRP:
             print("match não funcionou, usando nome do arquivo")
             self.number_of_trucks = int(intance_path.split("k")[1].removesuffix(".vrp"))
             
-        print(instance_dict)
-        self._generate_distance_matrix()
+        self._generate_distance_matrix(instance_dict)
+        self.vertex_demand = instance_dict["demand"]
+        self.truck_capacity = instance_dict["capacity"]
+        self.V = instance_dict["node_coord"]
+        self.depot_i = instance_dict["depot"][0]
         
-    def _generate_distance_matrix(self):
+    def _generate_distance_matrix(self, instance_dict: dict):
         """
         Calcula a matrix de distancias euclidiana de todos os vértices para todos
         """
-        shape = (self.instance_dict["capacity"], self.instance_dict["capacity"]) # matriz quadrada
+        shape = (instance_dict["dimension"], instance_dict["dimension"]) # matriz quadrada
         temp_array = np.zeros(shape=shape, dtype=float)
-        for v in enumerate(self.instance_dict["node_coord"]):    # v[0] -> indice  e  v[1] -> vetor(x,y)
-            for u in enumerate(self.instance_dict["node_coord"]):
+        for v in enumerate(instance_dict["node_coord"]):    # v[0] -> indice  e  v[1] -> vetor(x,y)
+            for u in enumerate(instance_dict["node_coord"]):
                 # norma de dois vetores que é equivalente a distância euclididiana
                 # usei a norma pois é mais rápido por conta do calculo com vetores
                 # ||v - u|| -> sqrt( sum((x_i - y_i)^2)) )
