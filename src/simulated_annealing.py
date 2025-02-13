@@ -28,7 +28,7 @@ class SimulatedAnnealing:
     
     def __next_temp(self, iteration: int) -> float:
         """Calcula a próxima temperatura usando o cooling schedule 
-        linear -> T_k = T0 - (alpha ** k) onde k é o numero da 
+        logaritmo -> T_k = T0 - (alpha ** k) onde k é o numero da 
         iteracao e alpha a taxa de resfriamento de 0-1
 
         Args:
@@ -37,7 +37,7 @@ class SimulatedAnnealing:
         Returns:
             float: nova temp
         """
-        return self.start_temp - self.alpha * iteration
+        return self.start_temp / np.log(1 + iteration)
         
     
     def optimize(self, instance: CVRP) -> dict:
@@ -51,7 +51,7 @@ class SimulatedAnnealing:
         current_solution = self.best_solution
         current_s_cost = self.best_solution_cost
         
-        iteration_n = 0 
+        iteration_n = 1
         time_diff = 0.0 
         self.best_solution_time = 0.0
         actual_temp = self.start_temp
@@ -59,7 +59,6 @@ class SimulatedAnnealing:
             # busca local
             new_solution = instance.generate_new_solution(current_solution)
             new_cost = instance.calculate_cost(new_solution)
-            
             cost_diff =  new_cost - current_s_cost
             #aceita solução melhor com menor custo
             if cost_diff < 0:
@@ -71,7 +70,7 @@ class SimulatedAnnealing:
                     self.best_solution = new_solution
                     self.best_solution_time = time_diff
             # aceita a solucao pior aleatoriamente seguindo uma funcao em relacao a temperatura atual
-            elif random.random() <= np.exp(-(cost_diff/actual_temp)):
+            elif random.random() <= np.exp(((-cost_diff)/actual_temp)):
                 current_s_cost = new_cost
                 current_solution = new_solution
             

@@ -44,6 +44,11 @@ class CVRP:
         self.depot_i = int(instance_dict["depot"][0])
         self.name = instance_dict["name"]
         
+        match = re.search(r'Optimal\s+value:\s*(\d+)', instance_dict["comment"])
+        if match:
+            # ("match com regex funcionou")
+            self.optimal_value = int(match.group(1))  
+        
         
     def __generate_distance_matrix(self, instance_dict: dict):
         """
@@ -111,6 +116,7 @@ class CVRP:
                 initial_sol.append(route)
             if self.verifica_solucao(initial_sol):
                 return initial_sol
+            exit()
         
     
     def verifica_solucao(self, sol: list[list[int]]) -> bool:
@@ -122,27 +128,31 @@ class CVRP:
         Returns:
             bool: se a solução é válida ou não
         """
-        vertex_set = set(range(1, len(self.V)))
+        vertex_set = list(range(1, len(self.V)))
+        # print(vertex_set)
         for route in sol:
             demand = sum([self.vertex_demand[v] for v in route])
             # demanda passou do total possível
             if demand > self.truck_capacity:
+                # print("Demand error")
                 return False
             elif route[0] != self.depot_i or route[-1] != self.depot_i:
                 return False
             # verifica se elemento estava ou não em alguma outra rota
             try:
-                for i in route[1:-2]:
+                for i in route[1:-1]:
                     vertex_set.remove(i)
-            except KeyError:
-                 # elemento ja foi removido logo estava em outra rota, 
-                 # solução inválida
-                return False 
+            except ValueError:
+                # elemento ja foi removido logo estava em outra rota, 
+                # solução inválida
+                return False
             # atendeu todas as possíveis condições logo é valida
-            return True
+        if len(vertex_set) == 0:
+           return True
+        else: 
+            return False
     
-    @staticmethod  # não usa nada da classe e pode ser usado por qualquer obejeto desta classe
-    def generate_new_solution(solution: list[list[int]]) -> list[list[int]]:
+    def generate_new_solution(self, solution: list[list[int]]) -> list[list[int]]:
         """Gera uma nova solução utilizando uma de três possiveis perturbações
         aleatóriamente escolhida (SWAP, TWO-WAY SWAP, 2-opt)
 
@@ -152,9 +162,9 @@ class CVRP:
         Returns:
             list[list[int]]: nova solução encontrada
         """
-        new_solution = [route.copy() for route in solution]
-        for _ in range(random.randint(1, len(new_solution))):
-            match random.randint(0,2):
+        while True:
+            new_solution = [route.copy() for route in solution]
+            match random.randint(0, 3): # Escolhe 1 de três operações possíveis
                 case 0:
                     # SWAP 
                     # realiza de 1 até n (aleatório até o n° de rotas)
@@ -204,6 +214,7 @@ class CVRP:
                     for i, j in zip(selected_indices1, selected_indices2):
                         route1[i], route2[j] = route2[j], route1[i]
                 case 2:
+                    # 2-OPT
                     # escolhe rotas validas para essa operação
                     valid_routes = [i for i in range(len(new_solution)) if len(new_solution[i]) > 3]
                     if not valid_routes:
@@ -217,5 +228,30 @@ class CVRP:
 
                     # reverte a ordem entre i and j
                     route[i:j+1] = reversed(route[i:j+1])
-            
+                case 3:
+                    # Algoritmo GULOSO
+                    # escolhe uma rota e vai pegando os menores caminhos de forma gulosa 
+                    # criando uma rota provavelmente menos custosa
+                    valid_routes = [i for i in range(len(new_solution)) if len(new_solution[i]) > 3]
+                    if not valid_routes:
+                        return new_solution  # não existem rotas validas
+                    
+                    route_idx = random.sample(valid_routes, 1)[0]
+                    route = new_solution[route_idx]
+                    
+                    new_route = [0] #inclui o deposio
+                    v_i = route[0] # deposito
+                    non_visited = list(route[1:-1])
+                    while True:
+                        if len(non_visited) == 0: # acabou
+                            break
+                        distance_for_all = np.array([self.distance_matrix[v_i][u_i] for u_i in (non_visited)]) # faz a distância
+                        min_path_i = int(distance_for_all.argmin()) # acha o minimo
+                        new_route.append(non_visited[min_path_i]) # adiciona o menor pra rota
+                        v_i = non_visited[min_path_i]
+                        non_visited.remove(v_i)
+                    new_route.append(0) # adiciona deposito
+                    new_solution[route_idx] = new_route    
+            if self.verifica_solucao(new_solution):
+                break  
         return new_solution
