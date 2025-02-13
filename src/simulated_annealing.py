@@ -2,6 +2,7 @@ import random
 from cvrp import CVRP
 from time import time
 import numpy as np
+import pandas as pd
 
 class SimulatedAnnealing:
     
@@ -27,7 +28,7 @@ class SimulatedAnnealing:
     
     def __next_temp(self, iteration: int) -> float:
         """Calcula a próxima temperatura usando o cooling schedule 
-        exponencial -> T_k = T0 * (alpha ** k) onde k é o numero da 
+        linear -> T_k = T0 - (alpha ** k) onde k é o numero da 
         iteracao e alpha a taxa de resfriamento de 0-1
 
         Args:
@@ -36,7 +37,7 @@ class SimulatedAnnealing:
         Returns:
             float: nova temp
         """
-        return self.start_temp * (np.pow(self.alpha, iteration))
+        return self.start_temp - self.alpha * iteration
         
     
     def optimize(self, instance: CVRP) -> dict:
@@ -58,8 +59,9 @@ class SimulatedAnnealing:
             # busca local
             new_solution = instance.generate_new_solution(current_solution)
             new_cost = instance.calculate_cost(new_solution)
-            cost_diff = new_cost - current_s_cost
-            #aceita solução melhor
+            
+            cost_diff =  new_cost - current_s_cost
+            #aceita solução melhor com menor custo
             if cost_diff < 0:
                 current_s_cost = new_cost
                 current_solution = new_solution
@@ -68,17 +70,24 @@ class SimulatedAnnealing:
                     self.best_solution_cost = new_cost
                     self.best_solution = new_solution
                     self.best_solution_time = time_diff
-                    
-            elif random.random() < np.exp(-(cost_diff/actual_temp)):
+            # aceita a solucao pior aleatoriamente seguindo uma funcao em relacao a temperatura atual
+            elif random.random() <= np.exp(-(cost_diff/actual_temp)):
                 current_s_cost = new_cost
                 current_solution = new_solution
             
             actual_temp = self.__next_temp(iteration_n)
             iteration_n += 1
             actual_time_stamp = time()
-            time_diff = actual_time_stamp - self.start_time 
-            print(iteration_n, current_s_cost, current_solution, time_diff,self.time_limit)
+            time_diff = actual_time_stamp - self.start_time
         self.finish_time = time()
         self.total_time_spent = self.finish_time - self.start_time
     
-        print(iteration_n, self.best_solution_cost, self.best_solution, self.best_solution_time,self.time_limit)
+    def return_report(self) -> dict:
+        """
+        Retorna o dicionario com com os resultados
+        """
+        return {
+            "best_solution": self.best_solution,
+            "best_cost": self.best_solution_cost,
+            "time_for_best_sol": self.best_solution_time,
+            }
