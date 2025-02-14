@@ -8,6 +8,7 @@ class SimulatedAnnealing:
     
     # valores iniciais
     start_temp: float
+    cooling_rate: float
     initial_solution: list[list[int]]
     
     # após otimizar são encontrados estes valores
@@ -18,9 +19,10 @@ class SimulatedAnnealing:
     total_time_spent: float
     best_solution_time: float
     
-    def __init__(self, initial_temp:float = 0.0, cooling_func="log",  time_limit:float = 0.0,  iteration_limit:float=np.inf):
+    def __init__(self, initial_temp:float = 0.0, cooling_func="log", cooling_rate=0.9, time_limit:float = 0.0,  iteration_limit:float=np.inf):
         self.start_temp = initial_temp
         self.cooling_func = cooling_func
+        self.cooling_rate= cooling_rate
         self.time_limit = float(time_limit)
         self.iteration_limit = iteration_limit
         
@@ -38,11 +40,11 @@ class SimulatedAnnealing:
         """
         match self.cooling_func:
             case "exp":
-                return self.start_temp * (0.999 ** iteration)
+                return self.start_temp * (self.cooling_rate ** iteration)
             case "log":
                 return self.start_temp / np.log(1 + iteration)
             case "lin":
-                return self.start_temp - 0.333 * iteration
+                return self.start_temp - self.cooling_rate * iteration
         
     
     def optimize(self, instance: CVRP) -> dict:
@@ -92,7 +94,7 @@ class SimulatedAnnealing:
         Retorna o dicionario com com os resultados
         """
         return {
-            "best_solution": [self.best_solution],
             "best_cost": self.best_solution_cost,
             "time_for_best_sol": self.best_solution_time,
+            "best_solution": [self.best_solution],
             }
