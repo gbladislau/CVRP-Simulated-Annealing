@@ -42,7 +42,6 @@ class SimulatedAnnealing:
     
     def optimize(self, instance: CVRP) -> dict:
         self.start_time = time()
-        
         self.initial_solution = instance.gen_initial_sol()
         
         self.best_solution = self.initial_solution
@@ -86,7 +85,7 @@ class SimulatedAnnealing:
         Retorna o dicionario com com os resultados
         """
         return {
-            "best_solution": self.best_solution,
+            "best_solution": [self.best_solution],
             "best_cost": self.best_solution_cost,
             "time_for_best_sol": self.best_solution_time,
             }
