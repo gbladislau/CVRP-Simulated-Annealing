@@ -2,13 +2,12 @@ import random
 from cvrp import CVRP
 from time import time
 import numpy as np
-import pandas as pd
+import math
 
 class SimulatedAnnealing:
     
     # valores iniciais
     start_temp: float
-    alpha: float  # cooling rate (taxa de resfriamento 0-1)
     initial_solution: list[list[int]]
     
     # após otimizar são encontrados estes valores
@@ -19,9 +18,9 @@ class SimulatedAnnealing:
     total_time_spent: float
     best_solution_time: float
     
-    def __init__(self, initial_temp:float = 0.0,  alpha:float = 0.1,  time_limit:float = 0.0, iteration_limit:float=np.inf):
+    def __init__(self, initial_temp:float = 0.0, cooling_func="log",  time_limit:float = 0.0,  iteration_limit:float=np.inf):
         self.start_temp = initial_temp
-        self.alpha = alpha
+        self.cooling_func = cooling_func
         self.time_limit = float(time_limit)
         self.iteration_limit = iteration_limit
         
@@ -37,7 +36,13 @@ class SimulatedAnnealing:
         Returns:
             float: nova temp
         """
-        return self.start_temp / np.log(1 + iteration)
+        match self.cooling_func:
+            case "exp":
+                return self.start_temp * (0.999 ** iteration)
+            case "log":
+                return self.start_temp / np.log(1 + iteration)
+            case "lin":
+                return self.start_temp - 0.333 * iteration
         
     
     def optimize(self, instance: CVRP) -> dict:
@@ -45,7 +50,7 @@ class SimulatedAnnealing:
         self.initial_solution = instance.gen_initial_sol()
         
         self.best_solution = self.initial_solution
-        self.best_solution_cost = instance.calculate_cost(self.initial_solution)
+        self.best_solution_cost = int(instance.calculate_cost(self.initial_solution))
         
         current_solution = self.best_solution
         current_s_cost = self.best_solution_cost
@@ -57,7 +62,7 @@ class SimulatedAnnealing:
         while time_diff < self.time_limit and iteration_n < self.iteration_limit:
             # busca local
             new_solution = instance.generate_new_solution(current_solution)
-            new_cost = instance.calculate_cost(new_solution)
+            new_cost = int(instance.calculate_cost(new_solution))
             cost_diff =  new_cost - current_s_cost
             #aceita solução melhor com menor custo
             if cost_diff < 0:
@@ -68,12 +73,14 @@ class SimulatedAnnealing:
                     self.best_solution_cost = new_cost
                     self.best_solution = new_solution
                     self.best_solution_time = time_diff
+            elif cost_diff == 0:
+                pass
             # aceita a solucao pior aleatoriamente seguindo uma funcao em relacao a temperatura atual
-            elif random.random() <= np.exp(((-cost_diff)/actual_temp)):
+            elif not actual_temp <= 0.0 and random.random() <= math.exp(-cost_diff/actual_temp):
                 current_s_cost = new_cost
                 current_solution = new_solution
-            
-            actual_temp = self.__next_temp(iteration_n)
+                actual_temp = self.__next_temp(iteration_n)
+                # print(cost_diff,  math.exp(-cost_diff/actual_temp))
             iteration_n += 1
             actual_time_stamp = time()
             time_diff = actual_time_stamp - self.start_time

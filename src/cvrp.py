@@ -62,7 +62,7 @@ class CVRP:
                 # usei a norma pois é mais rápido por conta do calculo com vetores
                 # ||v - u|| -> sqrt( sum((x_i - y_i)^2)) )
                 temp_array[v[0]][u[0]] = np.linalg.norm(v[1] - u[1]) 
-        self.distance_matrix = temp_array.astype(int) #salva as distâncias em inteiro            
+        self.distance_matrix = temp_array #salva as distâncias em inteiro            
     
     
     def calculate_cost(self, solution: np.ndarray) -> float:
