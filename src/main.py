@@ -1,6 +1,7 @@
 from simulated_annealing import SimulatedAnnealing
 from cvrp import CVRP
 import pandas as pd
+from tqdm import tqdm
 import os
 
 def search_best_parameters(
@@ -41,5 +42,37 @@ def search_best_parameters(
         print(df)
     df.to_csv("best_params_search_results_updated.csv", index=False)   
     
+def run_all_instances(root: str = "./instances", instance_folders = ["A","B","F"]):
+    for folder in instance_folders:
+        df = pd.DataFrame()
+        for instance in tqdm(list(filter(lambda x: True if x.endswith(".vrp") else False,
+                               os.listdir(os.path.join(root, folder)))),
+                             desc=f"Rodando instâncias de {folder}"):
+            instance_obj = CVRP(os.path.join(root, folder, instance))
+            for i in range(5):
+                sa = SimulatedAnnealing(
+                    initial_temp=100,
+                    cooling_func="log",
+                    cooling_rate=0.5555,
+                    time_limit=300.0
+                    )
+                sa.optimize(instance_obj)
+                report = sa.return_report()
+                df = pd.concat([df, pd.DataFrame(
+                            {
+                                "name":instance,
+                                "instance_no": i,
+                                "optimal_cost:":instance_obj.optimal_value,
+                                **report,
+                            }
+                            )],
+                        ignore_index=True
+                    )
+            df.to_csv("all_instances_run.csv", index=False)
+        
+def run_single_instance(path):
+    pass
+    
 if __name__ == "__main__":
-    search_best_parameters()
+    # search_best_parameters()
+    run_all_instances()

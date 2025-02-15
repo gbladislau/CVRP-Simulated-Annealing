@@ -47,12 +47,12 @@ class SimulatedAnnealing:
                 return self.start_temp - self.cooling_rate * iteration
         
     
-    def optimize(self, instance: CVRP) -> dict:
+    def optimize(self, instance: CVRP) -> None:
         self.start_time = time()
         self.initial_solution = instance.gen_initial_sol()
         
         self.best_solution = self.initial_solution
-        self.best_solution_cost = int(instance.calculate_cost(self.initial_solution))
+        self.best_solution_cost = math.ceil(instance.calculate_cost(self.initial_solution))
         
         current_solution = self.best_solution
         current_s_cost = self.best_solution_cost
@@ -64,7 +64,7 @@ class SimulatedAnnealing:
         while time_diff < self.time_limit and iteration_n < self.iteration_limit:
             # busca local
             new_solution = instance.generate_new_solution(current_solution)
-            new_cost = int(instance.calculate_cost(new_solution))
+            new_cost = math.ceil(instance.calculate_cost(new_solution))
             cost_diff =  new_cost - current_s_cost
             #aceita solução melhor com menor custo
             if cost_diff < 0:
@@ -78,7 +78,7 @@ class SimulatedAnnealing:
             elif cost_diff == 0:
                 pass
             # aceita a solucao pior aleatoriamente seguindo uma funcao em relacao a temperatura atual
-            elif not actual_temp <= 0.0 and random.random() <= math.exp(-cost_diff/actual_temp):
+            elif not actual_temp <= 0.0 and random.random() <= np.exp(-cost_diff/actual_temp):
                 current_s_cost = new_cost
                 current_solution = new_solution
                 actual_temp = self.__next_temp(iteration_n)
