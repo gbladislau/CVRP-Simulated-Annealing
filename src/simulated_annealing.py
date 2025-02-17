@@ -47,7 +47,10 @@ class SimulatedAnnealing:
                 return self.start_temp - self.cooling_rate * iteration
         
     
-    def optimize(self, instance: CVRP) -> None:
+    def optimize(self, instance: CVRP, gen_chart=False) -> None | dict[str, list[str]]:
+        
+        if gen_chart:
+            chart_dict = { "iterations":[], "f_obj_val":[]}
         self.start_time = time()
         self.initial_solution = instance.gen_initial_sol()
         
@@ -83,11 +86,16 @@ class SimulatedAnnealing:
                 current_solution = new_solution
                 actual_temp = self.__next_temp(iteration_n)
                 # print(cost_diff,  math.exp(-cost_diff/actual_temp))
+            if gen_chart:
+                chart_dict["f_obj_val"].append(current_s_cost)
+                chart_dict["iterations"].append(iteration_n-1) # começa em 1 (-1 para começar em 0)
             iteration_n += 1
             actual_time_stamp = time()
             time_diff = actual_time_stamp - self.start_time
         self.finish_time = time()
         self.total_time_spent = self.finish_time - self.start_time
+        if gen_chart:
+            return chart_dict
     
     def return_report(self) -> dict:
         """

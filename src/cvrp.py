@@ -181,7 +181,7 @@ class CVRP:
         new_solution = [route.copy() for route in solution]
         match random.randint(0, 3): # Escolhe 1 de três operações possíveis
             case 0:
-                # SWAP 
+                # Random Multiple Insertion 
                 # realiza de 1 até n (aleatório até o n° de rotas)
                 for _ in range(random.randint(1, len(new_solution))):
                     # escolhe 1 rota
