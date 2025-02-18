@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
     
 def params_mean_calculate():
+    """
+    Calcula a média para todas as instâncias na calibração de parâmentros
+    """
     df = pd.read_csv("/home/braga/work/CVRP/best_params_search_results_updated.csv")
 
     vals_list = []
@@ -30,6 +33,12 @@ def params_mean_calculate():
     print(vals_dict[np.array(vals_list).argmin()])
     
 def gen_all_instances_report(reports=["a_b.csv", "f.csv"]):
+    """Gera o report de todas as instâncias a partir dos reports individuais
+
+    Args:
+        reports (list, optional): lista com os arquivos da saída das instâncias
+                                  Defaults to ["a_b.csv", "f.csv"].
+    """
     df = pd.DataFrame()
     for report in reports:
         df = pd.concat([df,pd.read_csv(report)], ignore_index=True)
@@ -61,16 +70,7 @@ def gen_all_instances_report(reports=["a_b.csv", "f.csv"]):
         
         gap_min = (f_min - f_optimal)/f_optimal
         gap_med = (f_med - f_optimal)/f_optimal
-        # print({
-        #         "Instância": instance,
-        #         "f_otima": f_optimal,
-        #         "f_MH_min": f_min,
-        #         "f_MH_med": f_med,
-        #         "tempo_min": t_min, 
-        #         "tempo_med": t_med, 
-        #         "gap_min": gap_min, 
-        #         "gap_med": gap_med,
-        #     } )
+
         df_saida = pd.concat([df_saida, pd.DataFrame([
             {
                 "Instância": instance,
@@ -85,5 +85,8 @@ def gen_all_instances_report(reports=["a_b.csv", "f.csv"]):
             )], ignore_index=True)
         df_saida.to_csv("all_instances_report.csv", index=False)
     print(df_saida)
+    
 if __name__ == '__main__':
-    gen_all_instances_report()
+    # params_mean_calculate()
+    # gen_all_instances_report()
+    pass

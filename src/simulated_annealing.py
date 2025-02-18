@@ -48,7 +48,15 @@ class SimulatedAnnealing:
         
     
     def optimize(self, instance: CVRP, gen_chart=False) -> None | dict[str, list[str]]:
-        
+        """Otimiza e gera uma solução para a instância
+
+        Args:
+            instance (CVRP): instância do CVRP
+            gen_chart (bool, optional): se gera ou não o gráfico. Defaults to False.
+
+        Returns:
+            None | dict[str, list[str]]: nada ou dados para geração do gráfico
+        """
         if gen_chart:
             chart_dict = { "iterations":[], "f_obj_val":[]}
         self.start_time = time()
@@ -99,7 +107,7 @@ class SimulatedAnnealing:
     
     def return_report(self) -> dict:
         """
-        Retorna o dicionario com com os resultados
+        Retorna o dicionario com com os resultados salvos
         """
         return {
             "best_cost": self.best_solution_cost,

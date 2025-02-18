@@ -65,14 +65,14 @@ class CVRP:
         self.distance_matrix = temp_array #salva as distâncias em inteiro            
     
     
-    def calculate_cost(self, solution: np.ndarray) -> float:
+    def calculate_cost(self, solution: list[list[int]]) -> float:
         """Calcula o custo da solucao
 
         Args:
-            solution (np.ndarray): _description_
+            solution (list[list[int]]): solução
 
         Returns:
-            float: _description_
+            float: valor do custo
         """
         cost = 0.0
         # array de vertices
