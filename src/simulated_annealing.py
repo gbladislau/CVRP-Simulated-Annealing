@@ -63,7 +63,7 @@ class SimulatedAnnealing:
         self.initial_solution = instance.gen_initial_sol()
         
         self.best_solution = self.initial_solution
-        self.best_solution_cost = math.ceil(instance.calculate_cost(self.initial_solution))
+        self.best_solution_cost = round(instance.calculate_cost(self.initial_solution))
         
         current_solution = self.best_solution
         current_s_cost = self.best_solution_cost
@@ -75,7 +75,7 @@ class SimulatedAnnealing:
         while time_diff < self.time_limit and iteration_n < self.iteration_limit:
             # busca local
             new_solution = instance.generate_new_solution(current_solution)
-            new_cost = math.ceil(instance.calculate_cost(new_solution))
+            new_cost = round(instance.calculate_cost(new_solution))
             cost_diff =  new_cost - current_s_cost
             #aceita solução melhor com menor custo
             if cost_diff < 0:

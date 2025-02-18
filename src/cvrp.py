@@ -78,7 +78,7 @@ class CVRP:
         # array de vertices
         for route in solution:
             # para todos os vertices da rota (route) pega a distancia dele com o próximo (route[1:])
-            cost += sum(self.distance_matrix[a][b] for a, b in zip(route, route[1:]))
+            cost += np.sum(self.distance_matrix[a][b] for a, b in zip(route, route[1:]))
         return cost 
     
     
