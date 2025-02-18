@@ -11,7 +11,13 @@ def search_best_parameters(
         root: str = "./instances",
         instance_paths: list[str] = ["A/A-n32-k5", "A/A-n46-k7", "A/A-n80-k10","B/B-n50-k8", "B/B-n78-k10"]
     ):
-    
+    """Procura os melhores parâmetros
+
+    Args:
+        root (str, optional): raiz dos arquivos. Defaults to "./instances".
+        instance_paths (list[str], optional): arquivos de instância. 
+            Defaults to ["A/A-n32-k5", "A/A-n46-k7", "A/A-n80-k10","B/B-n50-k8", "B/B-n78-k10"].
+    """
     param_temps_initial = [100, 1000, 5000]
     params_cooling_func = ["exp", "lin", "log"]
     params_cooling_rate = [0.5555, 0.7777, 0.9999]
@@ -46,6 +52,12 @@ def search_best_parameters(
     df.to_csv("best_params_search_results_updated.csv", index=False)   
     
 def run_all_instances_serial(root: str = "./instances", instance_folders = ["A","B","F"]):
+    """Roda todas as instâncias do problema de forma serial
+
+    Args:
+        root (str, optional): raiz dos arquivos. Defaults to "./instances".
+        instance_folders (list, optional): pasta das instâncias. Defaults to ["A","B","F"].
+    """
     df = pd.DataFrame()
     for folder in instance_folders:
         for instance in tqdm(list(filter(lambda x: True if x.endswith(".vrp") else False,
@@ -73,17 +85,28 @@ def run_all_instances_serial(root: str = "./instances", instance_folders = ["A",
                     )
             df.to_csv("all_instances_run.csv", index=False)
         
-def process_instance(folder, instance, root="./instances"):
+def process_instance(folder, instance, root="./instances", time_lim=300.0, range_ = 5):
+    """Processa uma instância
+
+    Args:
+        folder (str): pasta do arquivo
+        instance (str): nome do arquivo
+        root (str, optional): raiz da pasta do arquivo. Defaults to "./instances".
+        time_lim (float, optional): limite de tempo. Defaults to 300.0.
+
+    Returns:
+        _type_: _description_
+    """
     instance_path = os.path.join(root, folder, instance)
     instance_obj = CVRP(instance_path)  
     reports = []
-    for i in range(5):
+    for i in range(range_):
         print(instance, i)
         sa = SimulatedAnnealing(
             initial_temp=100,
             cooling_func="log",
             cooling_rate=0.5555,
-            time_limit=300.0
+            time_limit=time_lim
         )
         sa.optimize(instance_obj)
         report = sa.return_report()
@@ -95,6 +118,13 @@ def process_instance(folder, instance, root="./instances"):
     return reports
 
 def run_instances_parallel(root="./instances", instance_folders=["A", "B", "F"], processes=4):
+    """Roda as instâncias em paralelo
+
+    Args:
+        root (str, optional): raiz dos arquivos. Defaults to "./instances".
+        instance_folders (list, optional): pasta das instâncias. Defaults to ["A", "B", "F"].
+        processes (int, optional): quantidade de processos. Defaults to 4.
+    """
     tasks = []
     for folder in instance_folders:
         folder_path = os.path.join(root, folder)
@@ -179,9 +209,17 @@ def gen_chart(root="./instances/A", instance="A-n32-k5.vrp"):
             
 
 if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 5:
+        print("USO: python3 src/main.py <path_root> <path_pasta> <path_instancia> <limite_de_tempo>")
     # search_best_parameters()
     # run_all_instances()
     # run_instances_parallel()
-    gen_chart()
+    # gen_chart()
+    out = process_instance(root=sys.argv[1],folder=sys.argv[2], instance=sys.argv[3], time_lim=sys.argv[4], range_=1)[0]
+    for i, rota in enumerate(out["best_solution"][0]):
+        print(f"# Rota {i}: {rota}")
+    print(f"Custo: {out["best_cost"]}")
+    print(f"Tmepo: {out["time_for_best_sol"]}")
     
     
