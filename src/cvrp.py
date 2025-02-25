@@ -61,24 +61,24 @@ class CVRP:
                 # norma de dois vetores que é equivalente a distância euclididiana
                 # usei a norma pois é mais rápido por conta do calculo com vetores
                 # ||v - u|| -> sqrt( sum((x_i - y_i)^2)) )
-                temp_array[v[0]][u[0]] = np.linalg.norm(v[1] - u[1]) 
+                temp_array[v[0]][u[0]] = round(np.linalg.norm(v[1] - u[1])) 
         self.distance_matrix = temp_array #salva as distâncias em inteiro            
     
     
-    def calculate_cost(self, solution: list[list[int]]) -> float:
+    def calculate_cost(self, solution: list[list[int]]) -> int:
         """Calcula o custo da solucao
 
         Args:
             solution (list[list[int]]): solução
 
         Returns:
-            float: valor do custo
+            int: valor do custo
         """
         cost = 0.0
         # array de vertices
         for route in solution:
             # para todos os vertices da rota (route) pega a distancia dele com o próximo (route[1:])
-            cost += np.sum(self.distance_matrix[a][b] for a, b in zip(route, route[1:]))
+            cost += round(np.sum(self.distance_matrix[a][b] for a, b in zip(route, route[1:])))
         return cost 
     
     
